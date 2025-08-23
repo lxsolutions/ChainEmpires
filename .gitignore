@@ -1,0 +1,22 @@
+# Unity specific gitignore
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Visual Studio / MonoDevelop generated
+*.csproj
+*.sln
+*.userprefs
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Misc
+*.unitypackage
+*.pidb
+*.meta (if you want to ignore meta files, but usually commit them)
