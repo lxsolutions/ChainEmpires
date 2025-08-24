@@ -1,0 +1,78 @@
+
+{
+  "app_id": "com.lxsolutions.chainempires",
+  "name": {
+    "en-US": "Chain Empires"
+  },
+  "description": {
+    "en-US": "Chain Empires: Epic MMO strategy with realms battles, AI waves, AR buffs, Solana P2E NFTs—build/conquer/earn! Privacy: No data collection beyond wallet. Version 0.3-beta"
+  },
+  "categories": [
+    {
+      "name": "Games",
+      "subcategory": "Strategy"
+    }
+  ],
+  "keywords": [
+    "strategy", "MMO", "P2E", "Solana", "NFTs", "realms", "AI", "AR", "mobile strategy", "blockchain game"
+  ],
+  "icon_paths": {
+    "512x512": "Assets/Store/icon_512x512.png",
+    "180x180": "Assets/Store/icon_180x180.png",
+    "72x72": "Assets/Store/icon_72x72.png"
+  },
+  "screenshots": [
+    {
+      "path": "Assets/Store/Screenshots/screenshot_1.png",
+      "caption": "Main game scene with base building"
+    },
+    {
+      "path": "Assets/Store/Screenshots/screenshot_2.png",
+      "caption": "Tower defense in action"
+    },
+    {
+      "path": "Assets/Store/Screenshots/screenshot_3.png",
+      "caption": "AI waves attacking the base"
+    },
+    {
+      "path": "Assets/Store/Screenshots/screenshot_4.png",
+      "caption": "Solana wallet integration for NFTs"
+    },
+    {
+      "path": "Assets/Store/Screenshots/screenshot_5.png",
+      "caption": "AR mode with buff scanning"
+    }
+  ],
+  "version": "0.3-beta",
+  "privacy_policy_url": "https://chainempires.com/privacy",
+  "support_email": "contact@chainempires.com",
+  "website": "https://chainempires.com",
+  "platforms": [
+    {
+      "name": "Android",
+      "min_version": "8.0"
+    },
+    {
+      "name": "iOS",
+      "min_version": "13.0"
+    }
+  ],
+  "features": [
+    "Turn-based PvP/PvE combat",
+    "Base building and upgrades",
+    "Resource management",
+    "Adaptive AI waves",
+    "Narrative echo realms",
+    "AR buffs and scans",
+    "Solana Web3 integration",
+    "True ownership of in-game assets"
+  ],
+  "content_rating": {
+    "rating": "Teen",
+    "reasons": [
+      "Fantasy Violence",
+      "Mild Blood"
+    ]
+  }
+}
+

@@ -72,6 +72,35 @@ namespace ChainEmpires
         {
             float avgFree = 0f, avgPaid = 0f, countFree = 0, countPaid = 0;
 
+            foreach (var bal in tokenBalances)
+            {
+                // Assume even split for analysis
+                if (countFree < numSessions / 2) { avgFree += bal; countFree++; }
+                else { avgPaid += bal; countPaid++; }
+            }
+            avgFree /= countFree;
+            avgPaid /= countPaid;
+
+            Debug.Log($"P2E Balance Sim: Avg Free Earnings: {avgFree}, Avg Paid: {avgPaid} (Ratio: {avgPaid / avgFree:P2} - Aim <1.2 for anti-P2W)");
+
+            // Save results to CSV
+            string csvPath = Path.Combine(Application.persistentDataPath, "p2e_simulation_results.csv");
+            using (StreamWriter writer = new StreamWriter(csvPath))
+            {
+                writer.WriteLine("SessionID,Earnings");
+                for (int i = 0; i < tokenBalances.Count; i++)
+                {
+                    writer.WriteLine($"{i},{tokenBalances[i]}");
+                }
+            }
+
+            Debug.Log($"Simulation results saved to: {csvPath}");
+
+            // Append summary to hub
+            string hubSummary = $"P2E Sim Results - Avg Free: {avgFree}, Avg Paid: {avgPaid}, Ratio: {avgPaid / avgFree:P2}\n";
+            File.AppendAllText("/workspace/ChainEmpires/docs/grok-progress-hub.md", hubSummary);
+        }
+
 
 
 

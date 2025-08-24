@@ -1,0 +1,68 @@
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<Scene version="1.0.0">
+  <Objects id="Root">
+    <MajorMonoBehaviour prefabInstanceStatus="NotAPrefabInstance" editorClassIdentifier="" name="P2ESimulatorTest">
+      <m_Component type="UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <m_Name>P2ESimulatorTest</m_Name>
+        <m_TagString></m_TagString>
+        <m_Icon>d__favicon://00000000000000000000000000000000</m_Icon>
+        <m_Layer>Default</m_Layer>
+        <m_IsActive>true</m_IsActive>
+      </m_Component>
+      <m_Component type="ChainEmpires.P2ESimulator, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <numSessions>100</numSessions>
+        <baseEarnRate>10</baseEarnRate>
+        <nftYieldBonus>0.2</nftYieldBonus>
+        <grindMultiplier>1.1</grindMultiplier>
+        <inflationCap>0.05</inflationCap>
+        <numberOfPlayers>100</numberOfPlayers>
+        <simulationDurationDays>7</simulationDurationDays>
+        <runOnStart>true</runOnStart>
+        <autoAdjustEconomy>true</autoAdjustEconomy>
+        <p2wRatioTarget>1.2</p2wRatioTarget>
+        <initialFreePlayerResources>500</initialFreePlayerResources>
+        <initialPaidPlayerResources>1000</initialPaidPlayerResources>
+      </m_Component>
+      <m_Component type="ChainEmpires.TestP2ESimulator, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <p2eSimulator>
+          <fileID:1000>0</fileID>
+        </p2eSimulator>
+      </m_Component>
+    </MajorMonoBehaviour>
+  </Objects>
+  <Prefabs/>
+  <RootGameObject>
+    <fileID:1000>0</fileID>
+  </RootGameObject>
+  <HiddenMonos/>
+  <Time>
+    <m_Time>0</m_Time>
+    <m_TimeScale>1</m_TimeScale>
+  </Time>
+  <RandomState>
+    <m_Bool>1</m_Bool>
+    <m_Int>252348796</m_Int>
+    <m_UInt>0</m_UInt>
+  </RandomState>
+  <Serialization>
+    <m_ObjectToPreserve>0</m_ObjectToPreserve>
+  </Serialization>
+  <CustomPhysicsSceneSettings/>
+  <MainCamera/>
+  <AudioEngine/>
+  <EditorSettings>
+    <Tags>
+      <SerializedPrivate>
+        <m_Script>
+          <fileID:1953627457>0</fileID>
+          <pathName></pathName>
+        </m_Script>
+        <m_Name>Untagged</m_Name>
+        <m_TagIndex>0</m_TagIndex>
+      </SerializedPrivate>
+    </Tags>
+  </EditorSettings>
+</Scene>
+

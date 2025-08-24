@@ -19,26 +19,55 @@ namespace ChainEmpires
         // Solana SDK client
         private SolanaSDK solanaClient;
 
-        // Testnet placeholders for safe development
+        // Testnet configuration for safe development
         [Header("Testnet Configuration")]
         public string testnetRpcEndpoint = "https://api.testnet.solana.com";
-        public string devnetPublicKeyPlaceholder = "devnet-public-key-placeholder";
+        public bool useTestnetMode = true;
 
         void Start()
         {
             Debug.Log("Web3 Integration initialized");
 
-            // Initialize Solana client with testnet
+            // Initialize Solana client with appropriate network
             solanaClient = new SolanaSDK(new Solana.Unity.SDK.Config
             {
                 Commitment = Solana.Unity.SDK.Commitment.Confirmed,
                 RpcEndpoint = testnetRpcEndpoint
             });
 
+            if (useTestnetMode)
+            {
+                Debug.Log("Testnet mode enabled - using safe placeholders");
+                InitializeTestnetEnvironment();
+            }
+
             if (autoConnectWallet)
             {
                 StartCoroutine(InitializeWalletConnection());
             }
+        }
+
+        private void InitializeTestnetEnvironment()
+        {
+            // Set up testnet environment for development
+            Debug.Log("Initializing Solana testnet environment...");
+
+            // Request SOL from faucet (simulated - would be HTTP POST in real implementation)
+            StartCoroutine(RequestSolFromFaucet());
+
+            // Configure client for testnet
+            solanaClient.Config.RpcEndpoint = testnetRpcEndpoint;
+        }
+
+        private IEnumerator RequestSolFromFaucet()
+        {
+            // In a real implementation, this would make an HTTP POST request to the Solana faucet
+            // Example: https://api.testnet.solana.com/
+            Debug.Log("Requesting SOL from testnet faucet...");
+
+            yield return new WaitForSeconds(1f); // Simulate network delay
+
+            Debug.Log("SOL requested successfully (simulated)");
         }
 
         private IEnumerator InitializeWalletConnection()
@@ -395,7 +424,7 @@ namespace ChainEmpires
         // Helper method to get testnet wallet address placeholder
         public string GetTestnetPublicKeyPlaceholder()
         {
-            return devnetPublicKeyPlaceholder;
+            return "testnet-public-key-placeholder";
         }
     }
 }

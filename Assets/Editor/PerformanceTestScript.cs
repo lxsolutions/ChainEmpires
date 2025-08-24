@@ -87,6 +87,20 @@ public class PerformanceTestScript : EditorWindow
         Debug.Log("Performance test started. Duration: " + testDurationMinutes + " minutes");
     }
 
+    [MenuItem("Tools/Run Performance Test with High Load")]
+    public static void RunPerformanceTestWithHighLoad()
+    {
+        PerformanceTestScript window = GetWindow<PerformanceTestScript>("Performance Test");
+
+        // Set high load parameters
+        window.enemyCount = 500;
+        window.waveCount = 15;
+        window.playerCount = 10;
+        window.testDurationMinutes = 30f;
+
+        window.RunPerformanceTest();
+    }
+
     private void PerformanceUpdate()
     {
         float elapsedTime = Time.realtimeSinceStartup - startTime;
