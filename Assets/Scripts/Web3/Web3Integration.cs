@@ -19,15 +19,20 @@ namespace ChainEmpires
         // Solana SDK client
         private SolanaSDK solanaClient;
 
+        // Testnet placeholders for safe development
+        [Header("Testnet Configuration")]
+        public string testnetRpcEndpoint = "https://api.testnet.solana.com";
+        public string devnetPublicKeyPlaceholder = "devnet-public-key-placeholder";
+
         void Start()
         {
             Debug.Log("Web3 Integration initialized");
 
-            // Initialize Solana client
+            // Initialize Solana client with testnet
             solanaClient = new SolanaSDK(new Solana.Unity.SDK.Config
             {
                 Commitment = Solana.Unity.SDK.Commitment.Confirmed,
-                RpcEndpoint = "https://api.testnet.solana.com"
+                RpcEndpoint = testnetRpcEndpoint
             });
 
             if (autoConnectWallet)
@@ -385,6 +390,12 @@ namespace ChainEmpires
         public string GetConnectedWalletAddress()
         {
             return connectedWalletAddress;
+        }
+
+        // Helper method to get testnet wallet address placeholder
+        public string GetTestnetPublicKeyPlaceholder()
+        {
+            return devnetPublicKeyPlaceholder;
         }
     }
 }

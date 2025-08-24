@@ -7,6 +7,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Pool;
 
 namespace ChainEmpires
 {
@@ -145,12 +146,45 @@ namespace ChainEmpires
         // List of all units
         private List<UnitData> units = new List<UnitData>();
 
+        // Object pooling for unit prefabs
+        private Dictionary<UnitType, ObjectPool<GameObject>> unitPools = new Dictionary<UnitType, ObjectPool<GameObject>>();
+
         public void Initialize()
         {
             Debug.Log("UnitManager initialized");
 
             // Start with a basic worker unit
             AddUnit(UnitType.Worker, "Worker #1", Vector3.zero);
+
+            // Initialize object pools for each unit type
+            foreach (UnitType type in System.Enum.GetValues(typeof(UnitType)))
+            {
+                unitPools[type] = new ObjectPool<GameObject>(CreateUnitPrefab, OnGetUnitFromPool, OnReleaseUnitToPool, OnDestroyUnitFromPool, true, 50, 100);
+            }
+        }
+
+        private GameObject CreateUnitPrefab()
+        {
+            // This will be called when creating a new pooled object
+            return new GameObject("Pooled Unit");
+        }
+
+        private void OnGetUnitFromPool(GameObject unit)
+        {
+            // Called when getting an unit from the pool (activating it)
+            unit.SetActive(true);
+        }
+
+        private void OnReleaseUnitToPool(GameObject unit)
+        {
+            // Called when releasing an unit to the pool (deactivating it)
+            unit.SetActive(false);
+        }
+
+        private void OnDestroyUnitFromPool(GameObject unit)
+        {
+            // Called when destroying an unit from the pool
+            Destroy(unit);
         }
 
         public void Update()
@@ -310,6 +344,94 @@ namespace ChainEmpires
             else
             {
                 Debug.LogWarning($"Cannot attack: attacker or target not found");
+            }
+        }
+
+        // New method to spawn units using pooling
+        public GameObject SpawnUnit(UnitType type, Vector3 position)
+        {
+            if (unitPools.TryGetValue(type, out ObjectPool<GameObject> pool))
+            {
+                GameObject unitPrefab = GetUnitPrefab(type);
+
+                if (unitPrefab != null)
+                {
+                    // Get unit from pool instead of instantiating
+                    GameObject unitObj = pool.Get();
+                    unitObj.transform.position = position;
+                    unitObj.transform.rotation = Quaternion.identity;
+
+                    // Set the prefab as parent to maintain visuals and components
+                    unitObj.transform.SetParent(unitPrefab.transform, false);
+
+                    // Copy components from prefab to pooled object
+                    CopyComponentsFromPrefab(unitObj, unitPrefab);
+
+                    return unitObj;
+                }
+            }
+
+            Debug.LogWarning($"No pool or prefab found for unit type {type}");
+            return null;
+        }
+
+        private GameObject GetUnitPrefab(UnitType type)
+        {
+            // This would be replaced with a proper prefab loading system
+            switch (type)
+            {
+                case UnitType.Worker:
+                    return Resources.Load<GameObject>("Prefabs/Units/Worker");
+                case UnitType.Scout:
+                    return Resources.Load<GameObject>("Prefabs/Units/Scout");
+                case UnitType.Warrior:
+                    return Resources.Load<GameObject>("Prefabs/Units/Warrior");
+                // Add more unit prefab loading...
+                default:
+                    Debug.LogWarning($"Unit type {type} not implemented");
+                    return null;
+            }
+        }
+
+        private void CopyComponentsFromPrefab(GameObject target, GameObject prefab)
+        {
+            // Copy essential components from prefab to ensure functionality
+            Renderer[] renderers = prefab.GetComponentsInChildren<Renderer>();
+            foreach (var renderer in renderers)
+            {
+                if (target.GetComponent(renderer.GetType()) == null)
+                {
+                    target.AddComponent(renderer.GetType());
+                }
+            }
+
+            Collider[] colliders = prefab.GetComponentsInChildren<Collider>();
+            foreach (var collider in colliders)
+            {
+                if (target.GetComponent(collider.GetType()) == null)
+                {
+                    target.AddComponent(collider.GetType());
+                }
+            }
+
+            // Copy specific components needed for unit functionality
+            UnitAI prefabUnitAI = prefab.GetComponent<UnitAI>();
+            if (prefabUnitAI != null && target.GetComponent<UnitAI>() == null)
+            {
+                target.AddComponent<UnitAI>().Initialize(prefabUnitAI);
+            }
+        }
+
+        public void DespawnUnit(GameObject unitObj)
+        {
+            // Find which pool this unit belongs to and return it
+            foreach (var poolEntry in unitPools)
+            {
+                if (poolEntry.Value.Contains(unitObj))
+                {
+                    poolEntry.Value.Release(unitObj);
+                    break;
+                }
             }
         }
     }

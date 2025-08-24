@@ -6,6 +6,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Pool;
 
 namespace ChainEmpires
 {
@@ -51,11 +52,44 @@ namespace ChainEmpires
         // List of all buildings
         private List<BuildingData> buildings = new List<BuildingData>();
 
+        // Object pooling for building prefabs
+        private Dictionary<BuildingType, ObjectPool<GameObject>> buildingPools = new Dictionary<BuildingType, ObjectPool<GameObject>>();
+
         public void Initialize()
         {
             Debug.Log("BuildingManager initialized");
             // Start with a basic town hall at origin
             AddBuilding(BuildingType.TownHall, Vector3.zero);
+
+            // Initialize object pools for each building type
+            foreach (BuildingType type in System.Enum.GetValues(typeof(BuildingType)))
+            {
+                buildingPools[type] = new ObjectPool<GameObject>(CreateBuildingPrefab, OnGetBuildingFromPool, OnReleaseBuildingToPool, OnDestroyBuildingFromPool, true, 50, 100);
+            }
+        }
+
+        private GameObject CreateBuildingPrefab()
+        {
+            // This will be called when creating a new pooled object
+            return new GameObject("Pooled Building");
+        }
+
+        private void OnGetBuildingFromPool(GameObject building)
+        {
+            // Called when getting an building from the pool (activating it)
+            building.SetActive(true);
+        }
+
+        private void OnReleaseBuildingToPool(GameObject building)
+        {
+            // Called when releasing an building to the pool (deactivating it)
+            building.SetActive(false);
+        }
+
+        private void OnDestroyBuildingFromPool(GameObject building)
+        {
+            // Called when destroying an building from the pool
+            Destroy(building);
         }
 
         public void Update()
@@ -183,6 +217,94 @@ namespace ChainEmpires
         public List<BuildingData> GetAllBuildings()
         {
             return buildings;
+        }
+
+        // New method to spawn buildings using pooling
+        public GameObject SpawnBuilding(BuildingType type, Vector3 position)
+        {
+            if (buildingPools.TryGetValue(type, out ObjectPool<GameObject> pool))
+            {
+                GameObject buildingPrefab = GetBuildingPrefab(type);
+
+                if (buildingPrefab != null)
+                {
+                    // Get building from pool instead of instantiating
+                    GameObject buildingObj = pool.Get();
+                    buildingObj.transform.position = position;
+                    buildingObj.transform.rotation = Quaternion.identity;
+
+                    // Set the prefab as parent to maintain visuals and components
+                    buildingObj.transform.SetParent(buildingPrefab.transform, false);
+
+                    // Copy components from prefab to pooled object
+                    CopyComponentsFromPrefab(buildingObj, buildingPrefab);
+
+                    return buildingObj;
+                }
+            }
+
+            Debug.LogWarning($"No pool or prefab found for building type {type}");
+            return null;
+        }
+
+        private GameObject GetBuildingPrefab(BuildingType type)
+        {
+            // This would be replaced with a proper prefab loading system
+            switch (type)
+            {
+                case BuildingType.TownHall:
+                    return Resources.Load<GameObject>("Prefabs/Buildings/TownHall");
+                case BuildingType.Barracks:
+                    return Resources.Load<GameObject>("Prefabs/Buildings/Barracks");
+                case BuildingType.Factory:
+                    return Resources.Load<GameObject>("Prefabs/Buildings/Factory");
+                // Add more building prefab loading...
+                default:
+                    Debug.LogWarning($"Building type {type} not implemented");
+                    return null;
+            }
+        }
+
+        private void CopyComponentsFromPrefab(GameObject target, GameObject prefab)
+        {
+            // Copy essential components from prefab to ensure functionality
+            Renderer[] renderers = prefab.GetComponentsInChildren<Renderer>();
+            foreach (var renderer in renderers)
+            {
+                if (target.GetComponent(renderer.GetType()) == null)
+                {
+                    target.AddComponent(renderer.GetType());
+                }
+            }
+
+            Collider[] colliders = prefab.GetComponentsInChildren<Collider>();
+            foreach (var collider in colliders)
+            {
+                if (target.GetComponent(collider.GetType()) == null)
+                {
+                    target.AddComponent(collider.GetType());
+                }
+            }
+
+            // Copy specific components needed for building functionality
+            Building prefabBuilding = prefab.GetComponent<Building>();
+            if (prefabBuilding != null && target.GetComponent<Building>() == null)
+            {
+                target.AddComponent<Building>().Initialize(prefabBuilding);
+            }
+        }
+
+        public void DespawnBuilding(GameObject buildingObj)
+        {
+            // Find which pool this building belongs to and return it
+            foreach (var poolEntry in buildingPools)
+            {
+                if (poolEntry.Value.Contains(buildingObj))
+                {
+                    poolEntry.Value.Release(buildingObj);
+                    break;
+                }
+            }
         }
     }
 }

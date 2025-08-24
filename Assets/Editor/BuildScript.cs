@@ -42,6 +42,26 @@ public class BuildScript
             options |= BuildOptions.AcceptExternalModificationsToPlayer;
         }
 
+        // Add compression and mock signing for alpha builds
+        PlayerSettings.Android.useCustomKeystore = false; // Mock signing for alpha
+        PlayerSettings.Android.keystoreName = "mock_keystore";
+        PlayerSettings.Android.keystorePass = "mock_pass";
+        PlayerSettings.Android.keyaliasName = "mock_keyalias";
+        PlayerSettings.Android.keyaliasPass = "mock_pass";
+
+        // Enable compression for all platforms
+        if (target == BuildTarget.Android)
+        {
+            PlayerSettings.Android.buildApkByGradle = true;
+            PlayerSettings.Android.minifyWithProGuardScript = false; // Disable minification for alpha
+            PlayerSettings.Android.deploymentBundle = isAndroidBundle;
+        }
+        else if (target == BuildTarget.iOS)
+        {
+            PlayerSettings.iOS.buildNumber = "1";
+            PlayerSettings.iOS.sdkVersion = iOSSdkVersion.Latest;
+        }
+
         GenericBuild(options, outputPath);
     }
 
@@ -54,6 +74,7 @@ public class BuildScript
         if (report.summary.result == BuildResult.Succeeded)
         {
             Debug.Log("Build succeeded: " + outputPath);
+            LogBuildSize(outputPath);
         }
         else
         {
@@ -63,6 +84,31 @@ public class BuildScript
                 Debug.LogError($"Step: {step.name}, Result: {step.result}");
             }
         }
+    }
+
+    private static void LogBuildSize(string outputPath)
+    {
+        if (System.IO.File.Exists(outputPath))
+        {
+            long size = new System.IO.FileInfo(outputPath).Length;
+            string readableSize = BytesToString(size);
+            Debug.Log($"Build size: {readableSize} ({size} bytes)");
+        }
+    }
+
+    private static string BytesToString(long byteCount)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+        int counter = 0;
+        double number = byteCount;
+
+        while (number >= 1024 && counter < suffixes.Length - 1)
+        {
+            number /= 1024;
+            counter++;
+        }
+
+        return $"{number:N2} {suffixes[counter]}";
     }
 }
 
