@@ -17,9 +17,10 @@ namespace ChainEmpires
 
 
         [Header("Extended Simulation Parameters")]
-        [SerializeField] private int numberOfPlayers = 100;
-        [SerializeField] private float simulationDurationDays = 28; // 4 weeks
+        [SerializeField] private int numberOfPlayers = 1000; // Extended for beta testing
+        [SerializeField] private float simulationDurationDays = 56; // 8 weeks
         [SerializeField] private bool runOnStart = false;
+        [SerializeField] private bool autoAdjustEconomy = true; // Auto-adjust params if P2W ratio exceeds target
 
         [Header("Economic Settings")]
         [SerializeField] private float p2wRatioTarget = 1.2f; // Target P2W ratio (free vs paid)
@@ -165,7 +166,26 @@ namespace ChainEmpires
             // Save results to CSV
             SaveSimulationResults();
 
-            if (p2wRatio > p2wRatioTarget)
+            if (autoAdjustEconomy && p2wRatio > p2wRatioTarget)
+            {
+                Debug.LogWarning($"P2W ratio exceeds target! Auto-adjusting economic parameters...");
+
+                // Adjust economic parameters to balance P2W ratio
+                float adjustmentFactor = p2wRatio / p2wRatioTarget;
+
+                if (adjustmentFactor > 1.5f) // If significantly unbalanced
+                {
+                    // Increase free player bonuses
+                    grindMultiplier *= 1.1f;
+                    nftYieldBonus *= 1.05f;
+
+                    // Decrease paid player advantages
+                    baseEarnRate *= 0.95f;
+
+                    Debug.Log($"Adjusted parameters: grindMultiplier={grindMultiplier}, nftYieldBonus={nftYieldBonus}, baseEarnRate={baseEarnRate}");
+                }
+            }
+            else if (p2wRatio > p2wRatioTarget)
             {
                 Debug.LogWarning("P2W ratio exceeds target! Consider adjusting economic parameters.");
             }

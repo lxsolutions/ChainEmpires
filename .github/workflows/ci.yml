@@ -51,6 +51,11 @@ jobs:
         name: ChainEmpires_iOS
         path: Builds/iOS/ChainEmpires_Alpha.ipa
 
+    - name: Lint YAML files
+      run: |
+        pip install yamllint
+        yamllint .
+
   test:
     runs-on: ubuntu-latest
 
@@ -79,5 +84,4 @@ jobs:
       with:
         name: TestResults
         path: TestResults/*
-
 

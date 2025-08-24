@@ -45,9 +45,9 @@ public class BuildScript
         GenericBuild(options, outputPath);
     }
 
-    private static void GenericBuild(BuildOptions buildOptions, string outputPath)
+    private static void GenericBuild(BuildOptions buildOptions, string outputPath, BuildTarget target)
     {
-        EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(BuildPipeline.GetBuildTargetName(BuildTarget.NoTarget)));
+        EditorUserBuildSettings.SwitchActiveBuildTarget(target);
 
         BuildReport report = BuildPipeline.BuildPlayer(SCENES, outputPath, target, buildOptions);
 
