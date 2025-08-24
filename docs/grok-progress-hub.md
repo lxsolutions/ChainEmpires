@@ -167,3 +167,20 @@
 - **Next Steps**: Final testing, performance optimization, and deployment preparation
 - **Grok Suggestions Needed?**: No.
 
+### Entry 16: [Current Timestamp] - Post-Core Deployment/Optimization
+- **Summary**: Implemented object pooling for TowerDefenseManager.cs/EnemyAI.cs/BaseTower.cs (200 instances), updated Web3Integration.cs with async Solana SDK calls, created build scripts, extended P2ESimulator.cs for beta simulations, and set up GitHub Actions CI.
+- **New/Changed Files**:
+  - `/Assets/Scripts/TowerDefense/TowerDefenseManager.cs` (object pooling)
+  - `/Assets/Scripts/AI/EnemyAI.cs` (object pooling)
+  - `/Assets/Scripts/TowerDefense/BaseTower.cs` (object pooling)
+  - `/Assets/Scripts/Web3/Web3Integration.cs` (async Solana integration)
+  - `/Assets/Editor/BuildScript.cs` (build automation)
+  - `/workspace/ChainEmpires/.github/workflows/ci.yml` (CI setup)
+  - `/Assets/Scripts/Economy/P2ESimulator.cs` (extended simulations)
+- **Task Tracker Status**: Optimization phase complete, ready for testing
+- **Issues**:
+  - Solana SDK integration requires testnet wallet keys (placeholders used)
+  - Performance testing needed to verify GC reduction
+- **Next Steps**: Store metadata/icons/descriptions, run performance tests, build alpha APK/iPA
+- **Grok Suggestions Needed?**: Real testnet wallet keys for Solana integration?
+

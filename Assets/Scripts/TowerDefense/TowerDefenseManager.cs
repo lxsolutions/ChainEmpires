@@ -12,6 +12,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Pool;
 
 namespace ChainEmpires
 {
@@ -32,6 +33,10 @@ namespace ChainEmpires
             EnemyManager.EnemyType.Alien
         };
 
+        // Object pooling for enemies and towers
+        private ObjectPool<GameObject> enemyPool;
+        private ObjectPool<GameObject> towerPool;
+
         private int currentWave = 1;
         private bool waveActive = false;
 
@@ -42,6 +47,10 @@ namespace ChainEmpires
                 Debug.LogWarning("No tower configurations found. Please add tower configs.");
                 return;
             }
+
+            // Initialize object pools
+            enemyPool = new ObjectPool<GameObject>(CreateEnemy, OnGetEnemyFromPool, OnReleaseEnemyToPool, OnDestroyEnemyFromPool, true, 100, 200);
+            towerPool = new ObjectPool<GameObject>(CreateTower, OnGetTowerFromPool, OnReleaseTowerToPool, OnDestroyTowerFromPool, true, 100, 200);
 
             // Start the wave cycle
             StartCoroutine(WaveCycle());
@@ -81,6 +90,54 @@ namespace ChainEmpires
             currentWave++;
         }
 
+        private GameObject CreateEnemy()
+        {
+            // This will be called when creating a new pooled object
+            return new GameObject("Pooled Enemy");
+        }
+
+        private void OnGetEnemyFromPool(GameObject enemy)
+        {
+            // Called when getting an enemy from the pool (activating it)
+            enemy.SetActive(true);
+        }
+
+        private void OnReleaseEnemyToPool(GameObject enemy)
+        {
+            // Called when releasing an enemy to the pool (deactivating it)
+            enemy.SetActive(false);
+        }
+
+        private void OnDestroyEnemyFromPool(GameObject enemy)
+        {
+            // Called when destroying an enemy from the pool
+            Destroy(enemy);
+        }
+
+        private GameObject CreateTower()
+        {
+            // This will be called when creating a new pooled object
+            return new GameObject("Pooled Tower");
+        }
+
+        private void OnGetTowerFromPool(GameObject tower)
+        {
+            // Called when getting a tower from the pool (activating it)
+            tower.SetActive(true);
+        }
+
+        private void OnReleaseTowerToPool(GameObject tower)
+        {
+            // Called when releasing a tower to the pool (deactivating it)
+            tower.SetActive(false);
+        }
+
+        private void OnDestroyTowerFromPool(GameObject tower)
+        {
+            // Called when destroying a tower from the pool
+            Destroy(tower);
+        }
+
         private void SpawnEnemy(EnemyManager.EnemyType type)
         {
             EnemyManager enemyManager = FindObjectOfType<EnemyManager>();
@@ -102,7 +159,15 @@ namespace ChainEmpires
                 if (enemyPrefab != null && buildPoints.Length > 0)
                 {
                     Vector3 spawnPosition = buildPoints[Random.Range(0, buildPoints.Length)].position;
-                    GameObject enemyObj = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+
+                    // Get enemy from pool instead of instantiating
+                    GameObject enemyObj = enemyPool.Get();
+                    enemyObj.transform.position = spawnPosition;
+                    enemyObj.transform.rotation = Quaternion.identity;
+
+                    // Set the prefab as parent to maintain visuals and components
+                    enemyObj.transform.SetParent(enemyPrefab.transform, false);
+
                     EnemyAI enemyAI = enemyObj.GetComponent<EnemyAI>();
 
                     if (enemyAI != null)
@@ -117,12 +182,50 @@ namespace ChainEmpires
                             enemyAI.SetTarget(playerBuildings[targetIndex].transform);
                         }
                     }
+
+                    // Copy components from prefab to pooled object
+                    CopyComponentsFromPrefab(enemyObj, enemyPrefab);
                 }
             }
         }
 
-        public void OnEnemyDefeated()
+        private void CopyComponentsFromPrefab(GameObject target, GameObject prefab)
         {
+            // Copy essential components from prefab to ensure functionality
+            Renderer[] renderers = prefab.GetComponentsInChildren<Renderer>();
+            foreach (var renderer in renderers)
+            {
+                if (target.GetComponent(renderer.GetType()) == null)
+                {
+                    target.AddComponent(renderer.GetType());
+                }
+            }
+
+            Collider[] colliders = prefab.GetComponentsInChildren<Collider>();
+            foreach (var collider in colliders)
+            {
+                if (target.GetComponent(collider.GetType()) == null)
+                {
+                    target.AddComponent(collider.GetType());
+                }
+            }
+
+            // Copy specific components needed for enemy functionality
+            EnemyAI prefabEnemyAI = prefab.GetComponent<EnemyAI>();
+            if (prefabEnemyAI != null && target.GetComponent<EnemyAI>() == null)
+            {
+                target.AddComponent<EnemyAI>().Initialize(prefabEnemyAI);
+            }
+        }
+
+        public void OnEnemyDefeated(GameObject defeatedEnemy)
+        {
+            // Return the enemy to the pool instead of destroying it
+            if (defeatedEnemy != null)
+            {
+                enemyPool.Release(defeatedEnemy);
+            }
+
             // Check if wave is completed
             GameObject[] activeEnemies = GameObject.FindGameObjectsWithTag("Enemy");
 
@@ -141,7 +244,17 @@ namespace ChainEmpires
 
                 if (towerPrefab != null)
                 {
-                    Instantiate(towerPrefab, position, Quaternion.identity);
+                    // Get tower from pool instead of instantiating
+                    GameObject towerObj = towerPool.Get();
+                    towerObj.transform.position = position;
+                    towerObj.transform.rotation = Quaternion.identity;
+
+                    // Set the prefab as parent to maintain visuals and components
+                    towerObj.transform.SetParent(towerPrefab.transform, false);
+
+                    // Copy components from prefab to pooled object
+                    CopyComponentsFromPrefab(towerObj, towerPrefab);
+
                     Debug.Log($"Built {config.TowerName} at {position}");
                 }
             }

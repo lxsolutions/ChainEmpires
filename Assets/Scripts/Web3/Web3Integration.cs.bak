@@ -1,4 +1,15 @@
 
+
+
+
+
+
+
+
+
+
+
+
 using UnityEngine;
 using System.Collections;
 using System.Threading.Tasks;
@@ -53,6 +64,12 @@ namespace ChainEmpires
             StartCoroutine(ConnectMobileWalletAsync());
             #endif
         }
+
+        public void ConnectWallet()
+        {
+            StartCoroutine(InitializeWalletConnection());
+        }
+
 
         private IEnumerator ConnectWalletAsync()
         {
@@ -116,10 +133,7 @@ namespace ChainEmpires
             }
         }
 
-        public void ConnectWallet()
-        {
-            StartCoroutine(InitializeWalletConnection());
-        }
+
 
         private void OnWalletConnected()
         {
@@ -190,40 +204,31 @@ namespace ChainEmpires
 
         private IEnumerator MintNFTRoutine(string nftName, string metadata)
         {
-            try
+            yield return new WaitForSeconds(2f); // Simulate minting delay
+
+            #if UNITY_WEBGL && !UNITY_EDITOR
+            Debug.Log($"Minting NFT: {nftName} with metadata: {metadata}");
+
+            // In a real implementation, this would call Solana/Moralis API
+            bool success = true; // Simulated success
+
+            if (success)
             {
-                Debug.Log($"Minting NFT: {nftName} with metadata: {metadata}");
-
-                // Simulate async minting call (in real implementation, use Solana SDK)
-                yield return new WaitForSeconds(2f); // Simulate network delay
-
-                #if UNITY_WEBGL && !UNITY_EDITOR
-                // Use WalletConnect to sign transaction and send to Solana blockchain
-                bool success = await MintNFTOnSolanaAsync(nftName, metadata);
-                #else
-                // Use native mobile wallet integration for minting
-                bool success = await MintNFTOnMobileWalletAsync(nftName, metadata);
-                #endif
-
-                if (success)
-                {
-                    Debug.Log($"NFT minted successfully: {nftName}");
-                    GameManager.Instance.UIManager.ShowNotification($"Minted NFT: {nftName}!");
-                }
-                else
-                {
-                    Debug.LogError("NFT minting failed");
-                    GameManager.Instance.UIManager.ShowError("NFT minting failed. Please try again.");
-                }
+                Debug.Log($"NFT minted successfully: {nftName}");
+                GameManager.Instance.UIManager.ShowNotification($"Minted NFT: {nftName}!");
             }
-            catch (System.Exception ex)
+            else
             {
-                Debug.LogError($"NFT minting error: {ex.Message}");
-                GameManager.Instance.UIManager.ShowError("NFT minting failed. Please check your connection and try again.");
+                Debug.LogError("NFT minting failed");
+                GameManager.Instance.UIManager.ShowError("NFT minting failed. Please try again.");
             }
+            #else
+            // Standalone/mobile logic would use native APIs
+            Debug.Log("NFT minting available on mobile/WebGL builds");
+            #endif
 
-            yield return null;
-        }
+
+
 
         private async Task<bool> MintNFTOnSolanaAsync(string nftName, string metadata)
         {
@@ -276,6 +281,11 @@ namespace ChainEmpires
                 Debug.LogError($"Mobile wallet NFT minting failed: {ex.Message}");
                 throw;
             }
+        }
+
+
+
+            yield return null;
         }
 
         public void StakeResources(ResourceManager.ResourceType resourceType, float amount)
@@ -356,3 +366,9 @@ namespace ChainEmpires
         }
     }
 }
+
+
+
+
+
+

@@ -1,0 +1,83 @@
+
+
+
+name: Chain Empires CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Unity License
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      run: |
+        mkdir -p ~/.local/share/unity3d/Unity/
+        echo $UNITY_LICENSE > ~/.local/share/unity3d/Unity/Unity_v20XX.XXXX.ulf
+
+    - name: Set up Unity
+      uses: game-ci/unity-builder@v2
+      with:
+        unityVersion: 2021.3.15f1
+
+    - name: Build Android APK
+      run: |
+        unity-builder -projectPath . -buildTarget Android -executeMethod BuildScript.BuildAlphaAPK
+
+    - name: Build iOS IPA
+      run: |
+        unity-builder -projectPath . -buildTarget iOS -executeMethod BuildScript.BuildAlphaIPA
+
+    - name: Upload Android APK artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ChainEmpires_Android
+        path: Builds/Android/ChainEmpires_Alpha.apk
+
+    - name: Upload iOS IPA artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ChainEmpires_iOS
+        path: Builds/iOS/ChainEmpires_Alpha.ipa
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Unity License
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      run: |
+        mkdir -p ~/.local/share/unity3d/Unity/
+        echo $UNITY_LICENSE > ~/.local/share/unity3d/Unity/Unity_v20XX.XXXX.ulf
+
+    - name: Set up Unity
+      uses: game-ci/unity-builder@v2
+      with:
+        unityVersion: 2021.3.15f1
+
+    - name: Run tests
+      run: |
+        unity-builder -projectPath . -testMode -buildTarget StandaloneWindows64 -executeMethod TestRunner.RunAllTests
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestResults
+        path: TestResults/*
+
+

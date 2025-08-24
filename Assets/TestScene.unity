@@ -1,0 +1,101 @@
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<Scene version="1.0.0">
+  <Objects>
+    <GameObject name="P2ESimulatorTest">
+      <Component type="Transform"/>
+      <Component type="ChainEmpires.P2ESimulator">
+        <m_Script>Assets/Scripts/Economy/P2ESimulator.cs</m_Script>
+        <numberOfPlayers>100</numberOfPlayers>
+        <simulationDurationDays>7</simulationDurationDays>
+        <runOnStart>false</runOnStart>
+        <p2wRatioTarget>1.2</p2wRatioTarget>
+        <initialFreePlayerResources>500</initialFreePlayerResources>
+        <initialPaidPlayerResources>1000</initialPaidPlayerResources>
+      </Component>
+    </GameObject>
+  </Objects>
+  <RootGameObjectsToLoad>
+    <GuidReference FileID="0">P2ESimulatorTest</GuidReference>
+  </RootGameObjectsToLoad>
+  <HiddenMonoscripts/>
+  <Time>
+    <m_Time>0</m_Time>
+    <m_FixedTimeStep>0.02</m_FixedTimeStep>
+  </Time>
+  <PhysicsManager>
+    <m_Gravity>-9.81,0,0</m_Gravity>
+    <m_MaxRigidbodyAcceleration>700</m_MaxRigidbodyAcceleration>
+    <m_DefaultMaterial>
+      <m_StaticFriction>0.6</m_StaticFriction>
+      <m_DynamicFriction>0.6</m_DynamicFriction>
+      <m_Bounciness>0</m_Bounciness>
+      <m_FrictionCombineMode>1</m_FrictionCombineMode>
+      <m_BounceCombineMode>1</m_BounceCombineMode>
+    </m_DefaultMaterial>
+  </PhysicsManager>
+  <AudioManager/>
+  <QualitySettings>
+    <m_Quality>3</m_Quality>
+    <m_PixelLightCount>4</m_PixelLightCount>
+    <m_BillboardStartDistance>10</m_BillboardStartDistance>
+    <m_LODBias>1</m_LODBias>
+  </QualitySettings>
+  <TagManager>
+    <m_Tags>
+      <GuidReference FileID="0">Untagged</GuidReference>
+      <GuidReference FileID="1">Respawn</GuidReference>
+      <GuidReference FileID="2">Finish</GuidReference>
+      <GuidReference FileID="3">EditorOnly</GuidReference>
+      <GuidReference FileID="4">MainCamera</GuidReference>
+      <GuidReference FileID="5">Player</GuidReference>
+      <GuidReference FileID="6">GameController</GuidReference>
+    </m_Tags>
+  </TagManager>
+  <RenderSettings>
+    <m_SkyboxMaterial/>
+    <m_Fog>true</m_Fog>
+    <m_FogColor>0.5,0.5,0.5,1</m_FogColor>
+    <m_FogMode>2</m_FogMode>
+    <m_FogDensity>0.01</m_FogDensity>
+    <m_LinearFogStart>0</m_LinearFogStart>
+    <m_LinearFogEnd>100</m_LinearFogEnd>
+  </RenderSettings>
+  <EditorSettings>
+    <m_EditorClassIdentifier>SceneSettings</m_EditorClassIdentifier>
+  </EditorSettings>
+  <PrefabInstanceStatus/>
+  <Physics2DSettings>
+    <m_Gravity>-9.81,0</m_Gravity>
+    <m_MaxAngularVelocity>700</m_MaxAngularVelocity>
+    <m_MaxLinearVelocity>700</m_MaxLinearVelocity>
+    <m_DefaultMaterial>
+      <m_Friction>0.6</m_Friction>
+      <m_Bounciness>0</m_Bounciness>
+      <m_FrictionMode>2</m_FrictionMode>
+      <m_BounceMode>2</m_BounceMode>
+    </m_DefaultMaterial>
+  </Physics2DSettings>
+  <Behaviours/>
+  <CustomPhysicsSceneSettings/>
+  <UISettings>
+    <m_CurrentControlSchemeIndex>0</m_CurrentControlSchemeIndex>
+  </UISettings>
+  <WorldInformation>
+    <m_EnvironmentLightingColor>0.192,0.216,0.251,1</m_EnvironmentLightingColor>
+    <m_FogColor>0.5,0.5,0.5,1</m_FogColor>
+  </WorldInformation>
+  <NavMeshAreas/>
+  <RenderTextures/>
+  <LightingData>
+    <m_BakedEmissivePowerNormalize>1</m_BakedEmissivePowerNormalize>
+    <m_ReflectionProbesInScene>0</m_ReflectionProbesInScene>
+    <m_LightProbeProxyVolumesInScene>0</m_LightProbeProxyVolumesInScene>
+  </LightingData>
+  <AssetPipeline>
+    <m_BuildTarget>StandaloneWindows64</m_BuildTarget>
+    <m_OptionCategory>Default</m_OptionCategory>
+  </AssetPipeline>
+</Scene>
+

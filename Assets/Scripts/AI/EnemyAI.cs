@@ -148,6 +148,13 @@ namespace ChainEmpires
             // Trigger death animation/effects
             StartCoroutine(DieAfterAnimation());
 
+            // Notify the tower defense manager about this enemy's defeat
+            TowerDefenseManager towerDefenseManager = FindObjectOfType<TowerDefenseManager>();
+            if (towerDefenseManager != null)
+            {
+                towerDefenseManager.OnEnemyDefeated(gameObject);
+            }
+
             // Notify the enemy manager about this enemy's defeat
             EnemyManager enemyManager = FindObjectOfType<EnemyManager>();
             if (enemyManager != null)
@@ -162,8 +169,8 @@ namespace ChainEmpires
             // Simulate death animation duration
             yield return new WaitForSeconds(0.5f);
 
-            // Destroy the enemy object
-            Destroy(gameObject);
+            // The enemy will be returned to the pool by TowerDefenseManager
+            // We don't need to destroy it here anymore
         }
 
         public void SetTarget(Transform newTarget)
