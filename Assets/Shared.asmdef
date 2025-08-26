@@ -1,0 +1,18 @@
+
+
+{
+  "name": "Shared",
+  "references": [],
+  "includePlatforms": [
+    "Editor",
+    "StandaloneWindows64",
+    "Android",
+    "iOS"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": true
+}
+

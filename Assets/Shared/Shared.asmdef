@@ -1,0 +1,34 @@
+
+
+
+
+
+
+
+
+
+
+
+{
+  "name": "Shared",
+  "references": [
+    { "assemblyName": "UnityEngine.CoreModule" }
+  ],
+  "optionalUnityReferences": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true
+}
+
+
+
+
+
+
+
+
+
+

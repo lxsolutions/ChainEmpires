@@ -1,0 +1,27 @@
+
+
+# Top-level .editorconfig file
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+tab_width = 4
+end_of_line = lf
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+quote_type = double
+indentation_detector = indent_size
+csharp_indent_switch_labels = false
+csharp_indent_namespace_declarations = true
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
+
+[*.asmdef]
+indent_style = space
+indent_size = 2
+tab_width = 2
+

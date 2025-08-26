@@ -1,0 +1,35 @@
+
+
+
+
+
+
+
+
+
+
+
+{
+  "name": "Server",
+  "references": [
+    { "assemblyName": "Shared" },
+    { "assemblyName": "UnityEngine.CoreModule" }
+  ],
+  "optionalUnityReferences": [],
+  "includePlatforms": [],
+  "excludePlatforms": ["WebGL"],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true
+}
+
+
+
+
+
+
+
+
+
+

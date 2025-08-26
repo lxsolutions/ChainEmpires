@@ -1,0 +1,36 @@
+
+
+
+
+
+
+
+
+
+
+
+
+{
+  "name": "Backend",
+  "references": [
+    { "assemblyName": "Shared" }
+  ],
+  "optionalUnityReferences": [],
+  "includePlatforms": [],
+  "excludePlatforms": ["WebGL"],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true
+}
+
+
+
+
+
+
+
+
+
+
+

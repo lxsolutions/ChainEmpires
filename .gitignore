@@ -20,3 +20,21 @@ Thumbs.db
 *.unitypackage
 *.pidb
 *.meta (if you want to ignore meta files, but usually commit them)
+# Git LFS for large assets
+*.fbx
+*.png
+*.jpg
+*.mp3
+*.wav
+*.ogg
+*.mat
+*.anim
+*.controller
+
+# IDE settings
+.idea/
+.vscode/
+
+# Server and backend build artifacts
+Server/[Bb]uild/
+Backend/[Bb]uild/

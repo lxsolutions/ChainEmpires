@@ -1,0 +1,108 @@
+
+
+
+
+
+
+name: Unity - Build Android
+
+on:
+  push:
+    branches:
+      - main
+      - alpha/**
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build for Android
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Shallow clones should be disabled for a better relevancy matching
+        lfs: true
+
+    - name: Set up Unity License
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      run: |
+        mkdir -p ~/.local/share/unity3d/Unity/
+        echo $UNITY_LICENSE > ~/.local/share/unity3d/Unity/Unity_v2023.x.ulf
+
+    - name: Set up Unity
+      uses: game-ci/unity-builder@v4
+      with:
+        unityVersion: 2023.1.18f1 # Update to LTS version when available
+
+    - name: Build Android APK
+      run: |
+        unity-builder \
+          --target=Android \
+          --device=Universal \
+          --buildTarget=StandaloneAndroid \
+          --androidArchitecture=ARM64 \
+          --androidSdkRoot=$ANDROID_SDK_ROOT \
+          --androidNdkRoot=$ANDROID_NDK_ROOT \
+          --androidNdkApiLevel=21 \
+          --customBuildName="ChainEmpires-Alpha" \
+          --buildPath=./Build/Android
+
+    - name: Upload Android APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: ChainEmpires-Android-APK
+        path: ./Build/Android/*
+
+    - name: Create GitHub Release
+      if: github.ref == 'refs/heads/main'
+      id: create_release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          ./Build/Android/*.apk
+        tag_name: alpha-v${{ github.run_number }}
+        release_name: Alpha Build ${{ github.run_number }}
+        draft: false
+        prerelease: true
+
+    - name: Notify Slack channel (optional)
+      if: always()
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        if [ "$SLACK_WEBHOOK_URL" != "" ]; then
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"text\": \"Chain Empires Alpha Android build completed. Run #${{ github.run_number }}\",
+            \"blocks\": [
+              {
+                \"type\": \"section\",
+                \"text\": {
+                  \"type\": \"mrkdwn\",
+                  \"text\": \"*Chain Empires Alpha Build Notification*\n- *Build Number*: ${{ github.run_number }}\n- *Status*: ${{ job.status }}\n- *Download*: <${{ steps.create_release.outputs.url }}|\"Download APK\">"
+                }
+              },
+              {
+                \"type\": \"actions\",
+                \"elements\": [
+                  {
+                    \"type\": \"button\",
+                    \"text\": {
+                      \"type\": \"plain_text\",
+                      \"text\": \"View Build Logs\"
+                    },
+                    \"url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+                  }
+                ]
+              }
+            ]
+          }" $SLACK_WEBHOOK_URL
+        fi
+
+
+
+

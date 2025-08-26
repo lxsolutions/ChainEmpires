@@ -1,0 +1,96 @@
+
+
+
+
+
+
+name: .NET Server - Build and Test
+
+on:
+  push:
+    branches:
+      - main
+      - alpha/**
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build Headless Server
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./Server
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Shallow clones should be disabled for a better relevancy matching
+        lfs: true
+
+    - name: Set up .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.x'
+
+    - name: Restore dependencies
+      run: dotnet restore ChainEmpires.Server.csproj
+
+    - name: Build server project
+      run: |
+        dotnet build ChainEmpires.Server.csproj \
+          --configuration Release \
+          --no-restore \
+          --output ./build/output
+
+    - name: Run unit tests
+      run: dotnet test ChainEmpires.Server.Tests/ChainEmpires.Server.Tests.csproj \
+        --configuration Release \
+        --no-build \
+        --verbosity normal
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Server-Binaries
+        path: ./Server/build/output/
+
+    - name: Create Docker image (optional)
+      if: github.ref == 'refs/heads/main'
+      run: |
+        docker build -t chainempires/server:${{ github.run_number }} \
+          --build-arg BUILD_CONFIG=Release \
+          .
+
+    - name: Run integration tests
+      env:
+        SERVER_URL: http://localhost:8081
+      run: |
+        # Start server in background for testing
+        ./build/output/ChainEmpires.Server &
+
+        # Wait for server to start
+        sleep 5
+
+        # Run integration tests (if available)
+        if [ -f "ChainEmpires.Server.IntegrationTests.csproj" ]; then
+          dotnet test ChainEmpires.Server.IntegrationTests.csproj \
+            --configuration Release \
+            --no-build \
+            --verbosity normal
+        else
+          echo "No integration tests found"
+        fi
+
+    - name: Stop server
+      if: always()
+      run: |
+        pkill -f "ChainEmpires.Server"
+
+
+
+
+

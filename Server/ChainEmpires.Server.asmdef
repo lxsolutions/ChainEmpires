@@ -1,0 +1,22 @@
+
+
+
+{
+  "name": "ChainEmpires.Server",
+  "references": [
+    "Shared"
+  ],
+  "includePlatforms": [
+    "Editor",
+    "StandaloneWindows64",
+    "LinuxServer",
+    "Linux64"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": true
+}
+
+

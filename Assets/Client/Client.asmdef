@@ -1,0 +1,31 @@
+
+
+
+
+
+
+
+
+
+{
+  "name": "Client",
+  "references": [
+    { "assemblyName": "Shared" },
+    { "assemblyName": "UnityEngine.CoreModule" },
+    { "assemblyName": "UnityEngine.UI" }
+  ],
+  "optionalUnityReferences": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true
+}
+
+
+
+
+
+
+
