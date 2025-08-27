@@ -7,6 +7,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Pool;
+using ChainEmpires.Buildings;
 
 namespace ChainEmpires
 {
@@ -28,165 +29,151 @@ namespace ChainEmpires
             Marketplace
         }
 
-        // Building data structure
-        private class BuildingData
-        {
-            public BuildingType Type;
-            public Vector3 Position;
-            public int Level;
-            public float Progress; // 0-1 for construction/upgrade progress
-            public bool IsUnderConstruction;
-            public float ConstructionTimeRemaining;
-
-            public BuildingData(BuildingType type, Vector3 position)
-            {
-                Type = type;
-                Position = position;
-                Level = 1;
-                Progress = 0f;
-                IsUnderConstruction = false;
-                ConstructionTimeRemaining = 0f;
-            }
-        }
-
-        // List of all buildings
-        private List<BuildingData> buildings = new List<BuildingData>();
-
+        // Active building instances
+        private List<Building> activeBuildings = new List<Building>();
+        
         // Object pooling for building prefabs
         private Dictionary<BuildingType, ObjectPool<GameObject>> buildingPools = new Dictionary<BuildingType, ObjectPool<GameObject>>();
 
         public void Initialize()
         {
             Debug.Log("BuildingManager initialized");
-            // Start with a basic town hall at origin
-            AddBuilding(BuildingType.TownHall, Vector3.zero);
-
+            
             // Initialize object pools for each building type
             foreach (BuildingType type in System.Enum.GetValues(typeof(BuildingType)))
             {
-                buildingPools[type] = new ObjectPool<GameObject>(CreateBuildingPrefab, OnGetBuildingFromPool, OnReleaseBuildingToPool, OnDestroyBuildingFromPool, true, 50, 100);
+                buildingPools[type] = new ObjectPool<GameObject>(
+                    () => CreateBuildingPrefab(type),
+                    OnGetBuildingFromPool,
+                    OnReleaseBuildingToPool,
+                    OnDestroyBuildingFromPool,
+                    true, 50, 100
+                );
             }
+            
+            Debug.Log($"Initialized building pools for {buildingPools.Count} building types");
         }
 
-        private GameObject CreateBuildingPrefab()
+        private GameObject CreateBuildingPrefab(BuildingType type)
         {
-            // This will be called when creating a new pooled object
-            return new GameObject("Pooled Building");
+            // Create a new GameObject with the appropriate building component
+            GameObject buildingObj = new GameObject($"{type}_Prefab");
+            
+            // Add the appropriate building component based on type
+            switch (type)
+            {
+                case BuildingType.Mine:
+                    buildingObj.AddComponent<Harvester>();
+                    break;
+                case BuildingType.Barracks:
+                    buildingObj.AddComponent<Barracks>();
+                    break;
+                case BuildingType.Wall:
+                    buildingObj.AddComponent<Wall>();
+                    break;
+                case BuildingType.DefenseTower:
+                    buildingObj.AddComponent<DefenseTower>();
+                    break;
+                default:
+                    // For other building types, add a generic Building component
+                    Building building = buildingObj.AddComponent<Building>();
+                    building.buildingType = type;
+                    building.buildingName = type.ToString();
+                    break;
+            }
+            
+            return buildingObj;
         }
 
         private void OnGetBuildingFromPool(GameObject building)
         {
-            // Called when getting an building from the pool (activating it)
+            // Called when getting a building from the pool (activating it)
             building.SetActive(true);
         }
 
         private void OnReleaseBuildingToPool(GameObject building)
         {
-            // Called when releasing an building to the pool (deactivating it)
+            // Called when releasing a building to the pool (deactivating it)
             building.SetActive(false);
         }
 
         private void OnDestroyBuildingFromPool(GameObject building)
         {
-            // Called when destroying an building from the pool
+            // Called when destroying a building from the pool
             Destroy(building);
         }
 
         public void Update()
         {
-            // Update building construction progress
-            foreach (var building in buildings)
-            {
-                if (building.IsUnderConstruction)
-                {
-                    building.ConstructionTimeRemaining -= Time.deltaTime;
-
-                    if (building.ConstructionTimeRemaining <= 0f)
-                    {
-                        CompleteBuildingConstruction(building);
-                    }
-                }
-            }
+            // Building updates are handled by individual Building components
         }
 
         public void OnDestroy()
         {
-            // Clean up any pending operations
-        }
-
-        public void AddBuilding(BuildingType type, Vector3 position)
-        {
-            BuildingData newBuilding = new BuildingData(type, position);
-            buildings.Add(newBuilding);
-
-            Debug.Log($"Added {type} building at {position}");
-
-            // Start construction if needed
-            StartBuildingConstruction(newBuilding);
-        }
-
-        private void StartBuildingConstruction(BuildingData building)
-        {
-            if (building.IsUnderConstruction) return;
-
-            building.IsUnderConstruction = true;
-            building.Progress = 0f;
-
-            // Set construction time based on building type and level
-            float baseConstructionTime = GetBaseConstructionTime(building.Type);
-            float constructionTime = baseConstructionTime * Mathf.Pow(1.2f, building.Level - 1); // 20% increase per level
-
-            building.ConstructionTimeRemaining = constructionTime;
-            Debug.Log($"Started construction of {building.Type} Level {building.Level}. Time remaining: {constructionTime}s");
-        }
-
-        private void CompleteBuildingConstruction(BuildingData building)
-        {
-            building.IsUnderConstruction = false;
-            building.Progress = 1f;
-
-            Debug.Log($"Completed construction of {building.Type} Level {building.Level} at {building.Position}");
-        }
-
-        public bool UpgradeBuilding(BuildingType type, Vector3 position)
-        {
-            BuildingData building = FindBuilding(type, position);
-
-            if (building == null)
+            // Clean up all building pools
+            foreach (var pool in buildingPools.Values)
             {
-                Debug.LogWarning($"No {type} building found at {position}");
-                return false;
+                pool.Clear();
             }
-
-            // Check if already upgrading
-            if (building.IsUnderConstruction)
-            {
-                Debug.LogWarning($"{type} building is already under construction/upgrade");
-                return false;
-            }
-
-            // Check resource requirements
-            ResourceManager resourceManager = GameManager.Instance.ResourceManager;
-
-            float mineralCost = 100f * building.Level; // Example cost scaling
-            if (!resourceManager.ConsumeResource(ResourceManager.ResourceType.Minerals, mineralCost))
-            {
-                Debug.LogWarning($"Not enough resources to upgrade {type} building");
-                return false;
-            }
-
-            building.Level++;
-            StartBuildingConstruction(building);
-
-            Debug.Log($"Started upgrade of {type} building to Level {building.Level}");
-            return true;
+            buildingPools.Clear();
+            activeBuildings.Clear();
         }
 
-        private BuildingData FindBuilding(BuildingType type, Vector3 position)
+        public Building CreateBuilding(BuildingType type, Vector3 position, Quaternion rotation)
         {
-            foreach (var building in buildings)
+            if (buildingPools.TryGetValue(type, out ObjectPool<GameObject> pool))
             {
-                if (building.Type == type && building.Position == position)
+                GameObject buildingObj = pool.Get();
+                buildingObj.transform.position = position;
+                buildingObj.transform.rotation = rotation;
+                
+                Building building = buildingObj.GetComponent<Building>();
+                if (building != null)
+                {
+                    activeBuildings.Add(building);
+                    building.StartConstruction();
+                    return building;
+                }
+            }
+            
+            Debug.LogWarning($"Failed to create building of type {type}");
+            return null;
+        }
+
+        public bool DestroyBuilding(Building building)
+        {
+            if (building == null) return false;
+            
+            if (activeBuildings.Contains(building))
+            {
+                activeBuildings.Remove(building);
+                
+                // Return to appropriate pool
+                if (buildingPools.TryGetValue(building.buildingType, out ObjectPool<GameObject> pool))
+                {
+                    pool.Release(building.gameObject);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        public List<Building> GetAllBuildings()
+        {
+            return new List<Building>(activeBuildings);
+        }
+
+        public List<Building> GetBuildingsOfType(BuildingType type)
+        {
+            return activeBuildings.FindAll(b => b.buildingType == type);
+        }
+
+        public Building GetBuildingAtPosition(Vector3 position, float radius = 1f)
+        {
+            foreach (var building in activeBuildings)
+            {
+                if (Vector3.Distance(building.transform.position, position) <= radius)
                 {
                     return building;
                 }
@@ -194,116 +181,68 @@ namespace ChainEmpires
             return null;
         }
 
-        private float GetBaseConstructionTime(BuildingType type)
+        // Helper methods for specific building types
+        public Harvester CreateHarvester(Vector3 position, ResourceManager.ResourceType resourceType = ResourceManager.ResourceType.Minerals)
         {
-            // Base construction times for each building type
-            switch (type)
+            Building building = CreateBuilding(BuildingType.Mine, position, Quaternion.identity);
+            if (building is Harvester harvester)
             {
-                case BuildingType.TownHall: return 60f; // 1 minute
-                case BuildingType.Barracks: return 30f; // 30 seconds
-                case BuildingType.Factory: return 45f; // 45 seconds
-                case BuildingType.PowerPlant: return 90f; // 1.5 minutes
-                case BuildingType.Mine: return 20f; // 20 seconds
-                case BuildingType.Farm: return 15f; // 15 seconds
-                case BuildingType.DefenseTower: return 30f; // 30 seconds
-                case BuildingType.Wall: return 10f; // 10 seconds per segment
-                case BuildingType.ResearchLab: return 120f; // 2 minutes
-                case BuildingType.Storage: return 45f; // 45 seconds
-                case BuildingType.Marketplace: return 75f; // 1.25 minutes
-                default: return 30f; // Default construction time
+                harvester.resourceType = resourceType;
+                return harvester;
             }
-        }
-
-        public List<BuildingData> GetAllBuildings()
-        {
-            return buildings;
-        }
-
-        // New method to spawn buildings using pooling
-        public GameObject SpawnBuilding(BuildingType type, Vector3 position)
-        {
-            if (buildingPools.TryGetValue(type, out ObjectPool<GameObject> pool))
-            {
-                GameObject buildingPrefab = GetBuildingPrefab(type);
-
-                if (buildingPrefab != null)
-                {
-                    // Get building from pool instead of instantiating
-                    GameObject buildingObj = pool.Get();
-                    buildingObj.transform.position = position;
-                    buildingObj.transform.rotation = Quaternion.identity;
-
-                    // Set the prefab as parent to maintain visuals and components
-                    buildingObj.transform.SetParent(buildingPrefab.transform, false);
-
-                    // Copy components from prefab to pooled object
-                    CopyComponentsFromPrefab(buildingObj, buildingPrefab);
-
-                    return buildingObj;
-                }
-            }
-
-            Debug.LogWarning($"No pool or prefab found for building type {type}");
             return null;
         }
 
-        private GameObject GetBuildingPrefab(BuildingType type)
+        public Barracks CreateBarracks(Vector3 position)
         {
-            // This would be replaced with a proper prefab loading system
+            Building building = CreateBuilding(BuildingType.Barracks, position, Quaternion.identity);
+            return building as Barracks;
+        }
+
+        public Wall CreateWall(Vector3 position)
+        {
+            Building building = CreateBuilding(BuildingType.Wall, position, Quaternion.identity);
+            return building as Wall;
+        }
+
+        public DefenseTower CreateDefenseTower(Vector3 position)
+        {
+            Building building = CreateBuilding(BuildingType.DefenseTower, position, Quaternion.identity);
+            return building as DefenseTower;
+        }
+
+        // Resource cost helper methods
+        public float GetConstructionCost(BuildingType type, int level = 1)
+        {
+            // Default costs - these would be overridden by actual building components
             switch (type)
             {
-                case BuildingType.TownHall:
-                    return Resources.Load<GameObject>("Prefabs/Buildings/TownHall");
-                case BuildingType.Barracks:
-                    return Resources.Load<GameObject>("Prefabs/Buildings/Barracks");
-                case BuildingType.Factory:
-                    return Resources.Load<GameObject>("Prefabs/Buildings/Factory");
-                // Add more building prefab loading...
-                default:
-                    Debug.LogWarning($"Building type {type} not implemented");
-                    return null;
+                case BuildingType.Mine: return 150f * level;
+                case BuildingType.Barracks: return 200f * level;
+                case BuildingType.Wall: return 80f * level;
+                case BuildingType.DefenseTower: return 250f * level;
+                case BuildingType.TownHall: return 500f * level;
+                default: return 100f * level;
             }
         }
 
-        private void CopyComponentsFromPrefab(GameObject target, GameObject prefab)
+        public float GetConstructionTime(BuildingType type, int level = 1)
         {
-            // Copy essential components from prefab to ensure functionality
-            Renderer[] renderers = prefab.GetComponentsInChildren<Renderer>();
-            foreach (var renderer in renderers)
+            // Base construction times
+            switch (type)
             {
-                if (target.GetComponent(renderer.GetType()) == null)
-                {
-                    target.AddComponent(renderer.GetType());
-                }
-            }
-
-            Collider[] colliders = prefab.GetComponentsInChildren<Collider>();
-            foreach (var collider in colliders)
-            {
-                if (target.GetComponent(collider.GetType()) == null)
-                {
-                    target.AddComponent(collider.GetType());
-                }
-            }
-
-            // Copy specific components needed for building functionality
-            Building prefabBuilding = prefab.GetComponent<Building>();
-            if (prefabBuilding != null && target.GetComponent<Building>() == null)
-            {
-                target.AddComponent<Building>().Initialize(prefabBuilding);
-            }
-        }
-
-        public void DespawnBuilding(GameObject buildingObj)
-        {
-            // Find which pool this building belongs to and return it
-            foreach (var poolEntry in buildingPools)
-            {
-                if (poolEntry.Value.Contains(buildingObj))
-                {
-                    poolEntry.Value.Release(buildingObj);
-                    break;
-                }
+                case BuildingType.TownHall: return 60f * Mathf.Pow(1.2f, level - 1);
+                case BuildingType.Barracks: return 30f * Mathf.Pow(1.2f, level - 1);
+                case BuildingType.Factory: return 45f * Mathf.Pow(1.2f, level - 1);
+                case BuildingType.PowerPlant: return 90f * Mathf.Pow(1.2f, level - 1);
+                case BuildingType.Mine: return 20f * Mathf.Pow(1.2f, level - 1);
+                case BuildingType.Farm: return 15f * Mathf.Pow(1.2f, level - 1);
+                case BuildingType.DefenseTower: return 30f * Mathf.Pow(1.2f, level - 1);
+                case BuildingType.Wall: return 10f * Mathf.Pow(1.2f, level - 1);
+                case BuildingType.ResearchLab: return 120f * Mathf.Pow(1.2f, level - 1);
+                case BuildingType.Storage: return 45f * Mathf.Pow(1.2f, level - 1);
+                case BuildingType.Marketplace: return 75f * Mathf.Pow(1.2f, level - 1);
+                default: return 30f * Mathf.Pow(1.2f, level - 1);
             }
         }
     }
