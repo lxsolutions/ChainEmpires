@@ -10,6 +10,7 @@ namespace ChainEmpires
         [Header("UI Elements")]
         [SerializeField] private Canvas hudCanvas;
         [SerializeField] private TextMeshProUGUI resourceText;
+        [SerializeField] private TextMeshProUGUI sessionText;
         [SerializeField] private Image minimapImage; // Fog of war texture
         [SerializeField] private GameObject narrativePopup; // For branching stories
         [SerializeField] private ChainEmpires.UI.MinimapManager minimapManager;
@@ -92,6 +93,7 @@ namespace ChainEmpires
 
         public void UpdateHUD()
         {
+            // Update resource display
             if (GameManager.Instance?.ResourceManager != null)
             {
                 ResourceManager rm = GameManager.Instance.ResourceManager;
@@ -107,6 +109,17 @@ namespace ChainEmpires
             else
             {
                 resourceText.text = "Resources: Loading...";
+            }
+            
+            // Update session display
+            if (GameManager.Instance?.SessionManager != null)
+            {
+                SessionManager sm = GameManager.Instance.SessionManager;
+                sessionText.text = sm.GetSessionStatus();
+            }
+            else
+            {
+                sessionText.text = "Session: Not started";
             }
             
             // Update minimap fog based on exploration
