@@ -2,6 +2,8 @@
 
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using ChainEmpires.Pathfinding;
 
 namespace ChainEmpires.Units
 {
@@ -27,6 +29,9 @@ namespace ChainEmpires.Units
         public bool isAttacking = false;
         public Vector3 targetPosition;
         public Unit attackTarget;
+        public List<Vector3> currentPath;
+        public int currentPathIndex = 0;
+        public bool usePathfinding = true;
         
         [Header("Visuals")]
         public GameObject selectionIndicator;
@@ -100,10 +105,24 @@ namespace ChainEmpires.Units
         
         public virtual void MoveTo(Vector3 position)
         {
-            targetPosition = position;
-            isMoving = true;
-            isAttacking = false;
-            attackTarget = null;
+            if (usePathfinding && PathfindingManager.Instance != null)
+            {
+                // Request path using pathfinding system
+                PathfindingManager.RequestPath(transform.position, position, OnPathReceived);
+                isMoving = true;
+                isAttacking = false;
+                attackTarget = null;
+            }
+            else
+            {
+                // Fallback to direct movement
+                targetPosition = position;
+                isMoving = true;
+                isAttacking = false;
+                attackTarget = null;
+                currentPath = null;
+                currentPathIndex = 0;
+            }
             
             // Start movement animation
             if (animator != null)
@@ -114,8 +133,45 @@ namespace ChainEmpires.Units
             Debug.Log($"{unitName} moving to {position}");
         }
         
+        private void OnPathReceived(List<Vector3> path)
+        {
+            if (path != null && path.Count > 0)
+            {
+                currentPath = path;
+                currentPathIndex = 0;
+                targetPosition = currentPath[currentPathIndex];
+                Debug.Log($"{unitName} path received with {path.Count} waypoints");
+            }
+            else
+            {
+                // Pathfinding failed, fallback to direct movement
+                Debug.LogWarning($"{unitName} pathfinding failed, using direct movement");
+                isMoving = true;
+            }
+        }
+        
         protected virtual void MoveToTarget()
         {
+            // Handle path following if using pathfinding
+            if (usePathfinding && currentPath != null && currentPathIndex < currentPath.Count)
+            {
+                // Check if reached current waypoint
+                if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+                {
+                    currentPathIndex++;
+                    if (currentPathIndex < currentPath.Count)
+                    {
+                        targetPosition = currentPath[currentPathIndex];
+                    }
+                    else
+                    {
+                        // Reached final destination
+                        StopMoving();
+                        return;
+                    }
+                }
+            }
+            
             Vector3 direction = (targetPosition - transform.position).normalized;
             transform.position += direction * moveSpeed * Time.deltaTime;
             
@@ -125,7 +181,7 @@ namespace ChainEmpires.Units
                 transform.rotation = Quaternion.LookRotation(direction);
             }
             
-            // Check if reached target
+            // Check if reached target (for direct movement)
             if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
             {
                 StopMoving();
@@ -135,6 +191,8 @@ namespace ChainEmpires.Units
         protected virtual void StopMoving()
         {
             isMoving = false;
+            currentPath = null;
+            currentPathIndex = 0;
             if (animator != null)
             {
                 animator.SetBool("IsMoving", false);
