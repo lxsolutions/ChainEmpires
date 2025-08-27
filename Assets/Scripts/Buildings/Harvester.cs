@@ -35,6 +35,13 @@ namespace ChainEmpires.Buildings
         {
             base.OnConstructionComplete();
             CalculateGenerationRate();
+            
+            // Register with ResourceManager
+            if (resourceManager != null)
+            {
+                resourceManager.RegisterHarvester(this);
+            }
+            
             Debug.Log($"{buildingName} Level {level} is now generating {currentGenerationRate} {resourceType} per second");
         }
         
@@ -82,6 +89,17 @@ namespace ChainEmpires.Buildings
                 return $"{baseInfo}\nGeneration: {currentGenerationRate:0.0}/s {resourceType}";
             }
             return baseInfo;
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            
+            // Unregister from ResourceManager when destroyed
+            if (resourceManager != null && isConstructed)
+            {
+                resourceManager.UnregisterHarvester(this);
+            }
         }
     }
 }
