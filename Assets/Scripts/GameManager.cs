@@ -26,6 +26,7 @@ namespace ChainEmpires
         public UnitManager unitManager;
         public CombatManager combatManager;
         public UIManager uiManager;
+        public SessionManager sessionManager;
 
         // Chain service implementation
         private IChainService _chainService;
@@ -77,6 +78,11 @@ namespace ChainEmpires
             if (unitManager != null)
             {
                 unitManager.Initialize();
+            }
+
+            if (sessionManager != null)
+            {
+                sessionManager.Initialize();
             }
 
             Debug.Log("Game initialization complete");

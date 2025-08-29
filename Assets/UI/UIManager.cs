@@ -10,14 +10,19 @@ namespace ChainEmpires
         [Header("UI Elements")]
         [SerializeField] private Canvas hudCanvas;
         [SerializeField] private TextMeshProUGUI resourceText;
-        [SerializeField] private Image minimap; // Fog of war texture
+        [SerializeField] private TextMeshProUGUI sessionText;
+        [SerializeField] private Image minimapImage; // Fog of war texture
         [SerializeField] private GameObject narrativePopup; // For branching stories
+        [SerializeField] private ChainEmpires.UI.MinimapManager minimapManager;
 
         [Header("Touch & Adaptive")]
         [SerializeField] private float hideIdleTime = 5f; // Auto-hide HUD
+        [SerializeField] private float hudUpdateInterval = 0.5f; // Update HUD every 0.5 seconds
         [SerializeField] private bool useNFTCosmetics = true; // Load on-chain skins
+        [SerializeField] private ChainEmpires.Input.TouchInputManager touchInputManager;
 
         private float lastInteractionTime;
+        private float hudUpdateTimer;
         private EventSystem eventSystem;
 
         void Start()
@@ -26,49 +31,111 @@ namespace ChainEmpires
             UpdateHUD(); // Initial sync
             lastInteractionTime = Time.time;
             if (useNFTCosmetics) LoadNFTSkins();
+            
+            // Setup touch input callbacks
+            SetupTouchInputCallbacks();
         }
 
         void Update()
         {
-            HandleTouch();
-            if (Time.time - lastInteractionTime > hideIdleTime) HideHUD(true);
-            else HideHUD(false);
-        }
-
-        private void HandleTouch()
-        {
-            if (Input.touchCount > 0)
+            // Update last interaction time based on any input
+            if (UnityEngine.Input.anyKeyDown || UnityEngine.Input.touchCount > 0)
             {
                 lastInteractionTime = Time.time;
-                Touch touch = Input.GetTouch(0);
-                if (touch.phase == TouchPhase.Began)
-                {
-                    // Drag-select or command
-                    if (!eventSystem.IsPointerOverGameObject(touch.fingerId)) SelectUnits(touch.position);
-                }
+            }
+            
+            if (Time.time - lastInteractionTime > hideIdleTime) HideHUD(true);
+            else HideHUD(false);
+            
+            // Update HUD at regular intervals
+            hudUpdateTimer += Time.deltaTime;
+            if (hudUpdateTimer >= hudUpdateInterval)
+            {
+                UpdateHUD();
+                UpdateMinimap();
+                hudUpdateTimer = 0f;
             }
         }
 
-        private void SelectUnits(Vector2 position)
+        private void SetupTouchInputCallbacks()
         {
-            // Raycast for unit selection
-            Ray ray = Camera.main.ScreenPointToRay(position);
-            if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag("Unit"))
+            if (touchInputManager != null)
             {
-                // Highlight/queue actions
-                Debug.Log("Selected unit: " + hit.collider.name);
+                touchInputManager.OnUnitSelected += HandleUnitSelected;
+                touchInputManager.OnMoveCommand += HandleMoveCommand;
+                touchInputManager.OnTap += HandleTap;
+                touchInputManager.OnDoubleTap += HandleDoubleTap;
             }
+        }
+
+        private void HandleUnitSelected(GameObject unitObject)
+        {
+            Debug.Log($"Unit selected: {unitObject.name}");
+            // Highlight unit and show unit info panel
+        }
+
+        private void HandleMoveCommand(Vector3 targetPosition)
+        {
+            Debug.Log($"Move command to: {targetPosition}");
+            // Issue move command to selected units
+        }
+
+        private void HandleTap(Vector3 worldPosition)
+        {
+            Debug.Log($"Tap at: {worldPosition}");
+        }
+
+        private void HandleDoubleTap(Vector3 worldPosition)
+        {
+            Debug.Log($"Double tap at: {worldPosition}");
+            // Select all units of same type or focus camera
         }
 
         public void UpdateHUD()
         {
-            resourceText.text = $"Minerals: {ResourceManager.Instance.Minerals} Energy: {ResourceManager.Instance.Energy}";
+            // Update resource display
+            if (GameManager.Instance?.ResourceManager != null)
+            {
+                ResourceManager rm = GameManager.Instance.ResourceManager;
+                string resourceDisplay = "";
+                
+                // Display primary resources (Minerals, Energy, Food)
+                resourceDisplay += $"Minerals: {rm.GetResourceAmount(ResourceManager.ResourceType.Minerals):0}/{rm.GetResourceCapacity(ResourceManager.ResourceType.Minerals):0} (+{rm.GetGenerationRate(ResourceManager.ResourceType.Minerals):0.0}/s)\n";
+                resourceDisplay += $"Energy: {rm.GetResourceAmount(ResourceManager.ResourceType.Energy):0}/{rm.GetResourceCapacity(ResourceManager.ResourceType.Energy):0} (+{rm.GetGenerationRate(ResourceManager.ResourceType.Energy):0.0}/s)\n";
+                resourceDisplay += $"Food: {rm.GetResourceAmount(ResourceManager.ResourceType.Food):0}/{rm.GetResourceCapacity(ResourceManager.ResourceType.Food):0} (+{rm.GetGenerationRate(ResourceManager.ResourceType.Food):0.0}/s)";
+                
+                resourceText.text = resourceDisplay;
+            }
+            else
+            {
+                resourceText.text = "Resources: Loading...";
+            }
+            
+            // Update session display
+            if (GameManager.Instance?.SessionManager != null)
+            {
+                SessionManager sm = GameManager.Instance.SessionManager;
+                sessionText.text = sm.GetSessionStatus();
+            }
+            else
+            {
+                sessionText.text = "Session: Not started";
+            }
+            
             // Update minimap fog based on exploration
         }
 
         private void HideHUD(bool hide)
         {
             hudCanvas.gameObject.SetActive(!hide);
+        }
+
+        private void UpdateMinimap()
+        {
+            if (minimapManager != null)
+            {
+                minimapManager.UpdateMinimapDisplay();
+            }
         }
 
         public void ShowNarrativePopup(string text, System.Action choiceCallback)
