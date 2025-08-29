@@ -1,0 +1,175 @@
+
+{
+  "info": {
+    "name": "Chain Empires Tournament API",
+    "description": "Postman collection for testing Chain Empires Tournament API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Tournament",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Weekly Tournament #1\",\n  \"buyInAmount\": 0.01,\n  \"buyInToken\": \"ETH\",\n  \"tableSize\": 8,\n  \"advanceCount\": 1,\n  \"rakeBps\": 200,\n  \"startTime\": \"2024-01-15T19:00:00Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/tournaments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "tournaments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Tournaments",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/tournaments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "tournaments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Tournament by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/tournaments/{{tournamentId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "tournaments", "{{tournamentId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Buy In to Tournament",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"playerAddress\": \"0x742d35Cc6634C0532925a3b844Bc454e4438f44e\",\n  \"baseNFTTokenId\": \"12345\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/tournaments/{{tournamentId}}/buyin",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "tournaments", "{{tournamentId}}", "buyin"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Player Table Assignment",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/tournaments/{{tournamentId}}/tables?playerAddress=0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "tournaments", "{{tournamentId}}", "tables"],
+          "query": [
+            {
+              "key": "playerAddress",
+              "value": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Submit Table Result",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"logHash\": \"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\",\n  \"merkleRoot\": \"0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/tables/{{tableId}}/result",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "tables", "{{tableId}}", "result"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Advance Tournament",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/tournaments/{{tournamentId}}/advance",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "tournaments", "{{tournamentId}}", "advance"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Calculate Payouts",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/tournaments/{{tournamentId}}/payouts",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "tournaments", "{{tournamentId}}", "payouts"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "tournamentId",
+      "value": "replace_with_actual_tournament_id",
+      "type": "string"
+    },
+    {
+      "key": "tableId",
+      "value": "replace_with_actual_table_id",
+      "type": "string"
+    }
+  ]
+}
